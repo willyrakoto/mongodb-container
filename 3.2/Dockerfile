@@ -1,5 +1,5 @@
 FROM centos:centos7
-MAINTAINER SoftwareCollections.org <sclorg@redhat.com>
+MAINTAINER smartux
 
 # MongoDB image for OpenShift.
 #
@@ -13,6 +13,11 @@ MAINTAINER SoftwareCollections.org <sclorg@redhat.com>
 
 ENV MONGODB_VERSION=3.2 \
     HOME=/var/lib/mongodb
+
+# WARNING LOCAL CHANGES DO NOT REPORT THEM ON KERMIT #
+ENV http_proxy=http://p-goodway.rd.francetelecom.fr:3128
+ENV https_proxy=http://p-goodway.rd.francetelecom.fr:3128
+# WARNING LOCAL CHANGES DO NOT REPORT THEM ON KERMIT #
 
 LABEL io.k8s.description="MongoDB is a scalable, high-performance, open source NoSQL database." \
       io.k8s.display-name="MongoDB 3.2" \
@@ -47,6 +52,16 @@ ENV BASH_ENV=${CONTAINER_SCRIPTS_PATH}/scl_enable \
     PROMPT_COMMAND=". ${CONTAINER_SCRIPTS_PATH}/scl_enable"
 
 ADD root /
+
+# Replace bad end line of file Windows / Linux
+RUN  sed -i -e 's/\r$//' /usr/bin/container-entrypoint \
+  && sed -i -e 's/\r$//' /usr/bin/run-mongod \
+  && sed -i -e 's/\r$//' /usr/libexec/fix-permissions \
+  && sed -i -e 's/\r$//' /usr/share/container-scripts/mongodb/common.sh \
+  && sed -i -e 's/\r$//' /usr/share/container-scripts/mongodb/initiate_replica.sh \
+  && sed -i -e 's/\r$//' /usr/share/container-scripts/mongodb/mongodb.conf.template \
+  && sed -i -e 's/\r$//' /usr/share/container-scripts/mongodb/replica_supervisor.sh \
+  && sed -i -e 's/\r$//' /usr/share/container-scripts/mongodb/scl_enable  
 
 # Container setup
 RUN touch /etc/mongod.conf && chown mongodb:0 /etc/mongod.conf && /usr/libexec/fix-permissions /etc/mongod.conf
